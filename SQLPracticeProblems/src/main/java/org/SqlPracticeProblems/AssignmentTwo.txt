@@ -1,0 +1,185 @@
+mysql> CREATE DATABASE AddressBookDB;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> USE AddressBookDB;
+Database changed
+
+mysql> CREATE TABLE AddressBook (
+    ->     ContactID INT AUTO_INCREMENT PRIMARY KEY,
+    ->     FirstName NVARCHAR(50),
+    ->     LastName NVARCHAR(50),
+    ->     Address NVARCHAR(100),
+    ->     City NVARCHAR(50),
+    ->     State NVARCHAR(50),
+    ->     Zip NVARCHAR(10),
+    ->     PhoneNumber NVARCHAR(15),
+    ->     Email NVARCHAR(100),
+    ->     BookName NVARCHAR(50),     -- For UC9
+    ->     BookType NVARCHAR(50)      -- For UC9
+    -> );
+Query OK, 0 rows affected, 10 warnings (0.06 sec)
+
+mysql> INSERT INTO AddressBook (FirstName, LastName, Address, City, State, Zip, PhoneNumber, Email, BookName, BookType)
+    -> VALUES ('John', 'Doe', '123 Elm St', 'New York', 'NY', '10001', '1234567890', 'john.doe@email.com', 'MyBook', 'Friend');
+Query OK, 1 row affected (0.02 sec)
+
+mysql> UPDATE AddressBook
+    -> SET PhoneNumber = '0987654321'
+    -> WHERE FirstName = 'John' AND LastName = 'Doe';
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> DELETE FROM AddressBook
+    -> WHERE FirstName = 'John' AND LastName = 'Doe';
+Query OK, 1 row affected (0.00 sec)
+
+mysql> -- By City
+mysql> SELECT * FROM AddressBook
+    -> WHERE City = 'New York';
+Empty set (0.00 sec)
+
+mysql> 
+mysql> -- By State
+mysql> SELECT * FROM AddressBook
+    -> WHERE State = 'NY';
+Empty set (0.00 sec)
+
+mysql> -- Count by City
+mysql> SELECT City, COUNT(*) AS CountByCity
+    -> FROM AddressBook
+    -> GROUP BY City;
+Empty set (0.01 sec)
+
+mysql> 
+mysql> -- Count by State
+mysql> SELECT State, COUNT(*) AS CountByState
+    -> FROM AddressBook
+    -> GROUP BY State;
+Empty set (0.00 sec)
+
+mysql> SELECT * FROM AddressBook
+    -> WHERE City = 'New York'
+    -> ORDER BY FirstName, LastName;
+Empty set (0.00 sec)
+
+
+mysql> DESCRIBE AddressBook;
++-------------+--------------+------+-----+---------+----------------+
+| Field       | Type         | Null | Key | Default | Extra          |
++-------------+--------------+------+-----+---------+----------------+
+| ContactID   | int          | NO   | PRI | NULL    | auto_increment |
+| FirstName   | varchar(50)  | YES  |     | NULL    |                |
+| LastName    | varchar(50)  | YES  |     | NULL    |                |
+| Address     | varchar(100) | YES  |     | NULL    |                |
+| City        | varchar(50)  | YES  |     | NULL    |                |
+| State       | varchar(50)  | YES  |     | NULL    |                |
+| Zip         | varchar(10)  | YES  |     | NULL    |                |
+| PhoneNumber | varchar(15)  | YES  |     | NULL    |                |
+| Email       | varchar(100) | YES  |     | NULL    |                |
+| BookName    | varchar(50)  | YES  |     | NULL    |                |
+| BookType    | varchar(50)  | YES  |     | NULL    |                |
++-------------+--------------+------+-----+---------+----------------+
+11 rows in set (0.02 sec)
+
+
+mysql> ALTER TABLE AddressBook
+    -> MODIFY BookName NVARCHAR(50),
+    -> MODIFY BookType NVARCHAR(50);
+Query OK, 0 rows affected, 2 warnings (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 2
+
+mysql> ALTER TABLE AddressBook
+    -> CHANGE COLUMN BookName NewBookName NVARCHAR(50),
+    -> CHANGE COLUMN BookType NewBookType NVARCHAR(50);
+Query OK, 0 rows affected, 2 warnings (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 2
+
+mysql> SHOW COLUMNS FROM AddressBook;
++-------------+--------------+------+-----+---------+----------------+
+| Field       | Type         | Null | Key | Default | Extra          |
++-------------+--------------+------+-----+---------+----------------+
+| ContactID   | int          | NO   | PRI | NULL    | auto_increment |
+| FirstName   | varchar(50)  | YES  |     | NULL    |                |
+| LastName    | varchar(50)  | YES  |     | NULL    |                |
+| Address     | varchar(100) | YES  |     | NULL    |                |
+| City        | varchar(50)  | YES  |     | NULL    |                |
+| State       | varchar(50)  | YES  |     | NULL    |                |
+| Zip         | varchar(10)  | YES  |     | NULL    |                |
+| PhoneNumber | varchar(15)  | YES  |     | NULL    |                |
+| Email       | varchar(100) | YES  |     | NULL    |                |
+| NewBookName | varchar(50)  | YES  |     | NULL    |                |
+| NewBookType | varchar(50)  | YES  |     | NULL    |                |
++-------------+--------------+------+-----+---------+----------------+
+11 rows in set (0.00 sec)
+
+mysql> SELECT BookType, COUNT(*) AS CountByType
+    -> FROM AddressBook
+    -> GROUP BY BookType;
+ERROR 1054 (42S22): Unknown column 'BookType' in 'field list'
+mysql> SELECT NewBookType, COUNT(*) AS CountByType
+    -> FROM AddressBook
+    -> GROUP BY NewBookType;
+Empty set (0.00 sec)
+
+
+mysql> -- One contact added as Friend
+mysql> INSERT INTO AddressBook (FirstName, LastName, Address, City, State, Zip, PhoneNumber, Email, NewBookName, NewBookType)
+    -> VALUES ('Alice', 'Smith', '456 Oak St', 'Boston', 'MA', '02101', '9999999999', 'alice.smith@email.com', 'MyBook', 'Friend');
+Query OK, 1 row affected (0.01 sec)
+
+
+
+mysql> -- Book Table
+mysql> CREATE TABLE Book (
+    ->     BookID INT AUTO_INCREMENT PRIMARY KEY,
+    ->     BookName VARCHAR(50),
+    ->     BookType VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+
+mysql> -- BookContact Table (Many-to-Many Relationship)
+mysql> CREATE TABLE BookContact (
+    ->     ContactID INT,
+    ->     BookID INT,
+    ->     PRIMARY KEY (ContactID, BookID),
+    ->     FOREIGN KEY (ContactID) REFERENCES AddressBook(ContactID),
+    ->     FOREIGN KEY (BookID) REFERENCES Book(BookID)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> -- Insert into AddressBook
+mysql> INSERT INTO AddressBook (FirstName, LastName, Address, City, State, Zip, PhoneNumber, Email)
+    -> VALUES ('Alice', 'Smith', '456 Oak St', 'Boston', 'MA', '02101', '9999999999', 'alice.smith@email.com');
+Query OK, 1 row affected (0.01 sec)
+
+mysql>  
+mysql> -- Insert into Book Table
+mysql> INSERT INTO Book (BookName, BookType)
+    -> VALUES ('MyBook', 'Friend');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> INSERT INTO AddressBook (FirstName, LastName, Address, City, State, Zip, PhoneNumber, Email)
+    -> VALUES ('Alice', 'Smith', '456 Oak St', 'Boston', 'MA', '02101', '9999999999', 'alice.smith@email.com');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT LAST_INSERT_ID();
++------------------+
+| LAST_INSERT_ID() |
++------------------+
+|                5 |
++------------------+
+1 row in set (0.00 sec)
+
+mysql> INSERT INTO Book (BookName, BookType)
+    -> VALUES ('MyBook', 'Friend');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT LAST_INSERT_ID();
++------------------+
+| LAST_INSERT_ID() |
++------------------+
+|                2 |
++------------------+
+1 row in set (0.00 sec)
+mysql> Terminal close -- exit!
